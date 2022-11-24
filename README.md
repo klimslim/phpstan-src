@@ -5,6 +5,18 @@
 
 ---
 
+## Build instructions
+After applying changes commit them locally. Then execute the following commands:
+```bash
+composer install
+cd compiler
+composer install
+php bin/prepare
+cd build
+php box.phar compile --no-parallel
+```
+The updated phpstan.phar will be generated in tmp folder of the repository.
+
 This repository (`phpstan/phpstan-src`) is for PHPStan's development only. Head to [`phpstan/phpstan`](https://github.com/phpstan/phpstan) for the main README, or to [create an issue](https://github.com/phpstan/phpstan/issues/new/choose).
 
 ## Contributing

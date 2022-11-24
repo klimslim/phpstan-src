@@ -30,7 +30,11 @@ use function defined;
 use function is_array;
 use function is_bool;
 use function is_string;
+use function getenv;
+use function ltrim;
+use function realpath;
 use function sprintf;
+use function str_replace;
 
 class WorkerCommand extends Command
 {
@@ -206,10 +210,21 @@ class WorkerCommand extends Command
 			$collectedData = [];
 			$dependencies = [];
 			$exportedNodes = [];
+			$docRoot = getenv('DOCUMENT_ROOT');
+			$shadowRoot = getenv('SHADOW_ROOT');
 			foreach ($files as $file) {
 				try {
 					if ($file === $insteadOfFile) {
 						$file = $tmpFile;
+					}
+					if (($docRoot !== '' || $docRoot !== false) && ($shadowRoot !== '' || $shadowRoot !== false)) {
+						$file = realpath(ltrim(str_replace($docRoot, '', $file), '/'));
+						if (is_string($file) && str_contains($file, $shadowRoot)) {
+							continue;
+						}
+						if (!is_string($file)) {
+							continue;
+						}
 					}
 					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFiles, $ruleRegistry, $collectorRegistry, null);
 					$fileErrors = $fileAnalyserResult->getErrors();

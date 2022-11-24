@@ -10,7 +10,11 @@ use Throwable;
 use function array_fill_keys;
 use function array_merge;
 use function count;
+use function getenv;
+use function ltrim;
+use function realpath;
 use function sprintf;
+use function str_replace;
 
 class Analyser
 {
@@ -56,7 +60,18 @@ class Analyser
 		$reachedInternalErrorsCountLimit = false;
 		$dependencies = [];
 		$exportedNodes = [];
+		$docRoot = getenv('DOCUMENT_ROOT');
+		$shadowRoot = getenv('SHADOW_ROOT');
 		foreach ($files as $file) {
+			if (($docRoot !== '' || $docRoot !== false) && ($shadowRoot !== '' || $shadowRoot !== false)) {
+				$file = realpath(ltrim(str_replace($docRoot, '', $file), '/'));
+				if (is_string($file) && str_contains($file, $shadowRoot)) {
+					continue;
+				}
+				if (!is_string($file)) {
+					continue;
+				}
+			}
 			if ($preFileCallback !== null) {
 				$preFileCallback($file);
 			}

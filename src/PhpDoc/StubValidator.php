@@ -60,7 +60,12 @@ use PHPStan\Type\ObjectType;
 use Throwable;
 use function array_fill_keys;
 use function count;
+use function is_string;
+use function getenv;
+use function ltrim;
+use function realpath;
 use function sprintf;
+use function str_replace;
 
 class StubValidator
 {
@@ -104,8 +109,19 @@ class StubValidator
 		$analysedFiles = array_fill_keys($stubFiles, true);
 
 		$errors = [];
+		$docRoot = getenv('DOCUMENT_ROOT');
+		$shadowRoot = getenv('SHADOW_ROOT');
 		foreach ($stubFiles as $stubFile) {
 			try {
+				if (($docRoot !== '' || $docRoot !== false) && ($shadowRoot !== '' || $shadowRoot !== false)) {
+					$stubFile = realpath(ltrim(str_replace($docRoot, '', $stubFile), '/'));
+					if (is_string($stubFile) && str_contains($stubFile, $shadowRoot)) {
+						continue;
+					}
+					if (!is_string($stubFile)) {
+						continue;
+					}
+				}
 				$tmpErrors = $fileAnalyser->analyseFile(
 					$stubFile,
 					$analysedFiles,
